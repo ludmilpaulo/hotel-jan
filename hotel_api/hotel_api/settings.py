@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "accounts",
     "inventory",
     "bookings",
+    "rooms",
+    "contact",
 ]
 
 MIDDLEWARE = [
@@ -58,10 +60,10 @@ AUTH_USER_MODEL = "accounts.User"
 
 ROOT_URLCONF = 'hotel_api.urls'
 
+CORS_ALLOW_ALL_ORIGINS = True  # em produção restringir
+
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
 }
 
 TEMPLATES = [
