@@ -16,8 +16,7 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
-  CreditCard,
-  MapPin
+  CreditCard
 } from "lucide-react";
 
 interface Room {
@@ -30,13 +29,38 @@ interface Room {
 }
 
 export default function ReservasPage() {
-  const [selection, setSelection] = useState<any>({
+interface DateSelection {
+  startDate: Date;
+  endDate: Date;
+  key: string;
+}
+
+interface ReservedDate {
+  startDate: Date;
+  endDate: Date;
+  key: string;
+}
+
+interface BookingDetails {
+  id: number;
+  booking_number: string;
+  room_name: string;
+  name: string;
+  email: string;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  guests: number;
+  total_price: string;
+}
+
+  const [selection, setSelection] = useState<DateSelection>({
     startDate: new Date(),
     endDate: addDays(new Date(), 2),
     key: "selection",
   });
 
-  const [reservedDates, setReservedDates] = useState<any[]>([]);
+  const [reservedDates, setReservedDates] = useState<ReservedDate[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [name, setName] = useState("");
@@ -48,6 +72,7 @@ export default function ReservasPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [specialRequests, setSpecialRequests] = useState("");
 
   // Buscar quartos e reservas
@@ -55,21 +80,12 @@ export default function ReservasPage() {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const [roomsRes, bookingsRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/rooms/"),
-    axios.get("http://localhost:8000/api/bookings/")
-        ]);
+        const roomsRes = await axios.get("http://localhost:8000/api/rooms/");
         
         setRooms(roomsRes.data);
         if (roomsRes.data.length > 0) {
           setSelectedRoom(roomsRes.data[0]);
         }
-        
-        setReservedDates(bookingsRes.data.map((b: any) => ({
-          startDate: new Date(b.check_in),
-          endDate: new Date(b.check_out),
-          key: "reserved"
-        })));
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
         setMessageType("error");
@@ -81,6 +97,35 @@ export default function ReservasPage() {
     
     fetchData();
   }, []);
+
+  // Fetch room-specific availability when room changes
+  useEffect(() => {
+    const fetchRoomAvailability = async () => {
+      if (!selectedRoom) return;
+      
+      try {
+        const response = await axios.get("http://localhost:8000/api/bookings/room_availability/", {
+          params: {
+            room_id: selectedRoom.id,
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: addDays(new Date(), 90).toISOString().split('T')[0]
+          }
+        });
+        
+        // Convert unavailable dates to Date objects
+        const unavailable = response.data.unavailable_dates.map((dateStr: string) => new Date(dateStr));
+        setReservedDates(unavailable.map((date: Date) => ({
+          startDate: date,
+          endDate: date,
+          key: "reserved"
+        })));
+      } catch (err) {
+        console.error("Erro ao buscar disponibilidade:", err);
+      }
+    };
+    
+    fetchRoomAvailability();
+  }, [selectedRoom]);
 
   const calculateNights = () => {
     return differenceInDays(selection.endDate, selection.startDate);
@@ -112,36 +157,34 @@ export default function ReservasPage() {
       setLoading(true);
       setMessage("");
       
-      await axios.post("http://localhost:8000/api/bookings/", {
+      const response = await axios.post("http://localhost:8000/api/bookings/", {
         room: selectedRoom.id,
         name,
         email,
+        phone,
+        guests,
         check_in: selection.startDate.toISOString().split("T")[0],
         check_out: selection.endDate.toISOString().split("T")[0],
+        special_requests: specialRequests,
       });
       
+      // Save booking details for confirmation modal
+      setBookingDetails(response.data);
       setMessageType("success");
       setMessage("✅ Reserva confirmada com sucesso!");
       setShowConfirmation(true);
       
-      // Limpar formulário
-      setTimeout(() => {
-        setName("");
-        setEmail("");
-        setPhone("");
-        setGuests(1);
-        setSpecialRequests("");
-        setSelection({
-          startDate: new Date(),
-          endDate: addDays(new Date(), 2),
-          key: "selection",
-        });
-      }, 3000);
-      
-    } catch (err: any) {
+    } catch (err) {
       setMessageType("error");
-      if (err.response?.data?.reserved) {
-        setMessage("⚠️ Quarto já reservado para essas datas. Por favor, escolha outras datas.");
+      const error = err as { response?: { data?: { reserved?: Array<{ check_in: string; check_out: string }> } } };
+      if (error.response?.data?.reserved) {
+        const reservedDates = error.response.data.reserved
+          .map((r) => `${r.check_in} → ${r.check_out}`)
+          .join(", ");
+        setMessage(`⚠️ Quarto já reservado: ${reservedDates}`);
+      } else if (error.response?.data) {
+        const errors = Object.values(error.response.data).flat().join(". ");
+        setMessage(`❌ ${errors}`);
       } else {
         setMessage("❌ Erro ao realizar reserva. Tente novamente.");
       }
@@ -225,18 +268,18 @@ export default function ReservasPage() {
               <div className="flex justify-center">
           <DateRange
             editableDateInputs={true}
-                  onChange={(item: { selection: any }) => setSelection(item.selection)}
+                  onChange={(item: { selection: DateSelection }) => setSelection(item.selection)}
             moveRangeOnFirstSelection={false}
             ranges={[selection]}
             minDate={new Date()}
                   rangeColors={["#EAB308"]}
                   className="rounded-xl"
             disabledDates={reservedDates.flatMap(r => {
-              const dates = [];
-              let d = new Date(r.startDate);
-              while (d <= r.endDate) {
-                dates.push(new Date(d));
-                d.setDate(d.getDate() + 1);
+                    const dates: Date[] = [];
+                    const currentDate = new Date(r.startDate);
+                    while (currentDate <= r.endDate) {
+                      dates.push(new Date(currentDate));
+                      currentDate.setDate(currentDate.getDate() + 1);
               }
               return dates;
             })}
@@ -463,6 +506,158 @@ export default function ReservasPage() {
           </div>
         </div>
       </div>
+
+      {/* Booking Confirmation Modal */}
+      {showConfirmation && bookingDetails && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="bg-gradient-to-r from-green-400 to-green-500 p-8 text-center text-white rounded-t-3xl">
+              <CheckCircle2 className="w-20 h-20 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold mb-2">Reserva Confirmada!</h2>
+              <p className="text-lg opacity-90">Número da Reserva: <strong>{bookingDetails.booking_number}</strong></p>
+            </div>
+            
+            <div className="p-8 space-y-6">
+              <div className="text-center">
+                <p className="text-gray-700 text-lg mb-4">
+                  Parabéns! Sua reserva foi confirmada com sucesso. 
+                  Enviamos um email de confirmação para <strong>{bookingDetails.email}</strong>
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-6 space-y-4">
+                <h3 className="font-bold text-xl text-gray-900 mb-4">Detalhes da Reserva</h3>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Quarto</p>
+                    <p className="font-bold text-gray-900">{bookingDetails.room_name}</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Hóspede</p>
+                    <p className="font-bold text-gray-900">{bookingDetails.name}</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Check-in</p>
+                    <p className="font-bold text-gray-900">
+                      {new Date(bookingDetails.check_in).toLocaleDateString('pt-PT', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Check-out</p>
+                    <p className="font-bold text-gray-900">
+                      {new Date(bookingDetails.check_out).toLocaleDateString('pt-PT', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Noites</p>
+                    <p className="font-bold text-gray-900">{bookingDetails.nights}</p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Hóspedes</p>
+                    <p className="font-bold text-gray-900">{bookingDetails.guests}</p>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-500 text-black p-4 rounded-lg text-center">
+                  <p className="text-sm mb-1">Total</p>
+                  <p className="text-2xl font-bold">
+                    Kz {parseFloat(bookingDetails.total_price).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                <h4 className="font-bold text-blue-900 mb-2">O Que Acontece Agora?</h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Email de confirmação enviado para {bookingDetails.email}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Check-in a partir das 14:00 no dia {new Date(bookingDetails.check_in).toLocaleDateString('pt-PT')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Check-out até às 12:00 no dia {new Date(bookingDetails.check_out).toLocaleDateString('pt-PT')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Cancelamento gratuito até 48 horas antes</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await axios.get(
+                        `http://localhost:8000/api/bookings/${bookingDetails.id}/invoice/`,
+                        { responseType: 'blob' }
+                      );
+                      const url = window.URL.createObjectURL(new Blob([response.data]));
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', `fatura_${bookingDetails.booking_number}.pdf`);
+                      document.body.appendChild(link);
+                      link.click();
+                      link.remove();
+                    } catch (err) {
+                      console.error('Erro ao baixar fatura:', err);
+                    }
+                  }}
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                >
+                  <CreditCard className="w-5 h-5" />
+                  Baixar Fatura (PDF)
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowConfirmation(false);
+                    setBookingDetails(null);
+                    // Reset form
+                    setName("");
+                    setEmail("");
+                    setPhone("");
+                    setGuests(1);
+                    setSpecialRequests("");
+                    setSelection({
+                      startDate: new Date(),
+                      endDate: addDays(new Date(), 2),
+                      key: "selection",
+                    });
+                    setMessage("");
+                  }}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg"
+                >
+                  Nova Reserva
+                </button>
+              </div>
+
+              <div className="text-center text-sm text-gray-600">
+                <p>Precisa de ajuda? Entre em contato:</p>
+                <p className="font-semibold text-gray-900">+244 914 260 030 | reservas@hoteljan.co.ao</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
