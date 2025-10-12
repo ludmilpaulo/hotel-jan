@@ -14,6 +14,11 @@ export default function Navbar() {
     { href: "/contato", label: "Contato", icon: <Phone size={18} /> },
   ];
 
+  const dashboardLinks = [
+    { href: "/dashboard", label: "Meu Painel" },
+    { href: "/admin", label: "Admin" },
+  ];
+
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 shadow-md">
       <div className="container mx-auto flex justify-between items-center px-6 py-4">
@@ -41,13 +46,27 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Botão CTA */}
-        <Link
-          href="/reservas"
-          className="hidden md:inline-block bg-yellow-500 text-black font-semibold px-5 py-2 rounded-lg shadow hover:bg-yellow-400 transition"
-        >
-          Reservar Agora
-        </Link>
+        {/* Dashboard & CTA */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex gap-2">
+            {dashboardLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-gray-600 hover:text-yellow-600 text-sm font-medium transition"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="w-px h-6 bg-gray-300"></div>
+          <Link
+            href="/reservas"
+            className="bg-yellow-500 text-black font-semibold px-5 py-2 rounded-lg shadow hover:bg-yellow-400 transition"
+          >
+            Reservar Agora
+          </Link>
+        </div>
 
         {/* Menu Mobile */}
         <button
@@ -73,6 +92,18 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <div className="border-t pt-4 space-y-3">
+              {dashboardLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block text-gray-600 hover:text-yellow-600 transition"
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
             <Link
               href="/reservas"
               className="bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg shadow hover:bg-yellow-400 text-center transition"
