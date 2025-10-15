@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, User, Lock } from 'lucide-react';
+import Link from 'next/link';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -90,6 +91,15 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
+        </div>
+
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-yellow-600 hover:text-yellow-700 font-medium"
+          >
+            Esqueceu sua senha?
+          </Link>
         </div>
 
         <button

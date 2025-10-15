@@ -153,6 +153,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For developm
 DEFAULT_FROM_EMAIL = 'Hotel Jan <noreply@hoteljan.co.ao>'
 SERVER_EMAIL = 'server@hoteljan.co.ao'
 
+# Frontend URL for password reset links
+FRONTEND_URL = 'http://localhost:3000'
+
 # Media files (for future use with images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
