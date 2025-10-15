@@ -3,14 +3,14 @@ import { Facebook, Instagram, Twitter, Phone, Mail, MapPin } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
-      <div className="container mx-auto px-6 py-12 grid md:grid-cols-4 gap-10">
+    <footer className="bg-gray-900 text-gray-300 mt-12 sm:mt-16">
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
         {/* Sobre */}
-        <div>
-          <h3 className="text-2xl font-bold text-white mb-4">
+        <div className="sm:col-span-2 lg:col-span-1">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
             <span className="text-yellow-500">Hotel</span> Jan
           </h3>
-          <p className="text-sm leading-relaxed">
+          <p className="text-xs sm:text-sm leading-relaxed">
             Conforto, elegância e hospitalidade em Talatona, Belas.  
             A sua estadia inesquecível em Angola começa aqui.
           </p>
@@ -18,18 +18,18 @@ export default function Footer() {
 
         {/* Contato */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Contato</h4>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-center gap-2">
-              <MapPin size={18} className="text-yellow-500" />
-              Rua Hotel Jan, Camama, Talatona, Belas, Angola
+          <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Contato</h4>
+          <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+            <li className="flex items-start gap-2">
+              <MapPin size={16} className="text-yellow-500 mt-0.5 flex-shrink-0" />
+              <span>Rua Hotel Jan, Camama, Talatona, Belas, Angola</span>
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={18} className="text-yellow-500" />
+              <Phone size={16} className="text-yellow-500 flex-shrink-0" />
               +244 914 260 030
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={18} className="text-yellow-500" />
+              <Mail size={16} className="text-yellow-500 flex-shrink-0" />
               reservas@hoteljan.co.ao
             </li>
           </ul>
@@ -37,8 +37,8 @@ export default function Footer() {
 
         {/* Links rápidos */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Links Rápidos</h4>
-          <ul className="space-y-2 text-sm">
+          <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Links Rápidos</h4>
+          <ul className="space-y-2 text-xs sm:text-sm">
             <li>
               <Link href="/" className="hover:text-yellow-400 transition">
                 Início
@@ -64,35 +64,38 @@ export default function Footer() {
 
         {/* Redes sociais */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Siga-nos</h4>
-          <div className="flex gap-4">
+          <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Siga-nos</h4>
+          <div className="flex gap-3 sm:gap-4">
             <Link
               href="https://facebook.com"
               target="_blank"
               className="p-2 rounded-full bg-gray-800 hover:bg-yellow-500 hover:text-black transition"
+              aria-label="Facebook"
             >
-              <Facebook size={20} />
+              <Facebook size={18} className="sm:w-5 sm:h-5" />
             </Link>
             <Link
               href="https://instagram.com"
               target="_blank"
               className="p-2 rounded-full bg-gray-800 hover:bg-yellow-500 hover:text-black transition"
+              aria-label="Instagram"
             >
-              <Instagram size={20} />
+              <Instagram size={18} className="sm:w-5 sm:h-5" />
             </Link>
             <Link
               href="https://twitter.com"
               target="_blank"
               className="p-2 rounded-full bg-gray-800 hover:bg-yellow-500 hover:text-black transition"
+              aria-label="Twitter"
             >
-              <Twitter size={20} />
+              <Twitter size={18} className="sm:w-5 sm:h-5" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Rodapé inferior */}
-      <div className="border-t border-gray-700 text-center py-4 text-sm text-gray-400">
+      <div className="border-t border-gray-700 text-center py-3 sm:py-4 text-xs sm:text-sm text-gray-400 px-4 sm:px-6">
         © {new Date().getFullYear()} Hotel Jan — Todos os direitos reservados.
       </div>
     </footer>
