@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/auth/forgot-password/', {
+      const response = await fetch('https://hoteljan.shop/api/auth/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

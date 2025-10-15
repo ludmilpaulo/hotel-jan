@@ -35,7 +35,7 @@ export default function AdminRooms() {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/api/rooms/");
+      const response = await axios.get("https://hoteljan.shop/api/rooms/");
       setRooms(response.data);
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -49,10 +49,10 @@ export default function AdminRooms() {
     
     try {
       if (editingRoom) {
-        await axios.put(`http://localhost:8000/api/rooms/${editingRoom.id}/`, formData);
+        await axios.put(`https://hoteljan.shop/api/rooms/${editingRoom.id}/`, formData);
         alert("Quarto atualizado com sucesso!");
       } else {
-        await axios.post("http://localhost:8000/api/rooms/", formData);
+        await axios.post("https://hoteljan.shop/api/rooms/", formData);
         alert("Quarto criado com sucesso!");
       }
       setShowModal(false);
@@ -69,7 +69,7 @@ export default function AdminRooms() {
     if (!confirm("Tem certeza que deseja deletar este quarto?")) return;
     
     try {
-      await axios.delete(`http://localhost:8000/api/rooms/${id}/`);
+      await axios.delete(`https://hoteljan.shop/api/rooms/${id}/`);
       alert("Quarto deletado com sucesso!");
       fetchRooms();
     } catch (error) {

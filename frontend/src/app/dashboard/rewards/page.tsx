@@ -21,7 +21,7 @@ export default function RewardsPage() {
 
   const fetchUserBookings = async (email: string) => {
     try {
-      const response = await axios.get("http://localhost:8000/api/bookings/my_bookings/", {
+      const response = await axios.get("https://hoteljan.shop/api/bookings/my_bookings/", {
         params: { email },
       });
       setBookings(response.data);

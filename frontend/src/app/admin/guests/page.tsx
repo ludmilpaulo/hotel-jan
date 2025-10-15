@@ -39,7 +39,7 @@ export default function AdminGuests() {
   const fetchGuests = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/api/bookings/");
+      const response = await axios.get("https://hoteljan.shop/api/bookings/");
       interface BookingData {
         email: string;
         name: string;

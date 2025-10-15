@@ -43,7 +43,7 @@ function UserDashboard() {
   const fetchUserBookings = async (email: string) => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/api/bookings/my_bookings/", {
+      const response = await axios.get("https://hoteljan.shop/api/bookings/my_bookings/", {
         params: { email },
       });
       setBookings(response.data);
@@ -61,7 +61,7 @@ function UserDashboard() {
   const downloadInvoice = async (bookingId: number, bookingNumber: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/bookings/${bookingId}/invoice/`,
+        `https://hoteljan.shop/api/bookings/${bookingId}/invoice/`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
