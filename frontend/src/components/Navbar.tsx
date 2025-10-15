@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Home, BedDouble, CalendarDays, Phone } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { Menu, X, Home, BedDouble, CalendarDays, Phone, LogIn, LogOut, User, Settings } from "lucide-react";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const navLinks = [
     { href: "/", label: "Início", icon: <Home size={18} /> },
@@ -14,10 +17,29 @@ export default function Navbar() {
     { href: "/contato", label: "Contato", icon: <Phone size={18} /> },
   ];
 
-  const dashboardLinks = [
-    { href: "/dashboard", label: "Meu Painel" },
-    { href: "/admin", label: "Admin" },
-  ];
+  const getDashboardLink = () => {
+    if (!isAuthenticated || !user) return null;
+    
+    switch (user.role) {
+      case 'ADMIN':
+        return { href: "/admin", label: "Admin" };
+      case 'MANAGER':
+      case 'STAFF':
+        return { href: "/staff", label: "Staff" };
+      case 'GUEST':
+        return { href: "/dashboard", label: "Meu Painel" };
+      default:
+        return { href: "/dashboard", label: "Dashboard" };
+    }
+  };
+
+  const dashboardLink = getDashboardLink();
+
+  const handleLogout = () => {
+    logout();
+    setShowUserMenu(false);
+    setOpen(false);
+  };
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 shadow-md">
@@ -46,19 +68,62 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Dashboard & CTA */}
+        {/* Auth & CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <div className="flex gap-2">
-            {dashboardLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-gray-600 hover:text-yellow-600 text-sm font-medium transition"
+          {isAuthenticated ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 text-gray-700 hover:text-yellow-600 transition p-2 rounded-lg hover:bg-gray-50"
               >
-                {link.label}
+                <User className="w-5 h-5" />
+                <span className="font-medium">{user?.first_name || user?.username}</span>
+              </button>
+              
+              {showUserMenu && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
+                  <div className="px-4 py-2 border-b">
+                    <p className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                    <p className="text-xs text-yellow-600 font-medium">
+                      {user?.role === 'ADMIN' ? 'Administrador' :
+                       user?.role === 'MANAGER' ? 'Gerente' :
+                       user?.role === 'STAFF' ? 'Funcionário' :
+                       'Hóspede'}
+                    </p>
+                  </div>
+                  
+                  {dashboardLink && (
+                    <Link
+                      href={dashboardLink.href}
+                      className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      {dashboardLink.label}
               </Link>
-            ))}
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
+                </div>
+              )}
           </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 text-gray-600 hover:text-yellow-600 text-sm font-medium transition"
+            >
+              <LogIn className="w-4 h-4" />
+              Entrar
+            </Link>
+          )}
+          
           <div className="w-px h-6 bg-gray-300"></div>
           <Link
             href="/reservas"
@@ -92,18 +157,52 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
             <div className="border-t pt-4 space-y-3">
-              {dashboardLinks.map((link) => (
+              {isAuthenticated ? (
+                <>
+                  <div className="px-2 py-2 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                    <p className="text-xs text-yellow-600 font-medium">
+                      {user?.role === 'ADMIN' ? 'Administrador' :
+                       user?.role === 'MANAGER' ? 'Gerente' :
+                       user?.role === 'STAFF' ? 'Funcionário' :
+                       'Hóspede'}
+                    </p>
+                  </div>
+                  
+                  {dashboardLink && (
+                    <Link
+                      href={dashboardLink.href}
+                      className="flex items-center gap-3 text-gray-600 hover:text-yellow-600 transition"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      {dashboardLink.label}
+                    </Link>
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 text-red-600 hover:text-red-700 transition w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
+                </>
+              ) : (
                 <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block text-gray-600 hover:text-yellow-600 transition"
+                  href="/login"
+                  className="flex items-center gap-3 text-gray-600 hover:text-yellow-600 transition"
                   onClick={() => setOpen(false)}
                 >
-                  {link.label}
+                  <LogIn className="w-4 h-4" />
+                  Entrar
                 </Link>
-              ))}
+              )}
             </div>
+            
             <Link
               href="/reservas"
               className="bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg shadow hover:bg-yellow-400 text-center transition"

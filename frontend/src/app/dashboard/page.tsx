@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { GuestHelpGuide } from '@/components/HelpGuide';
 import {
   Calendar,
   Download,
   Award,
-  User,
   Star,
   CheckCircle2,
 } from "lucide-react";
@@ -26,21 +28,17 @@ interface Booking {
   is_active: boolean;
 }
 
-export default function UserDashboard() {
-  const [userEmail, setUserEmail] = useState("");
+function UserDashboard() {
+  const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showEmailInput, setShowEmailInput] = useState(true);
   const [rewardPoints, setRewardPoints] = useState(0);
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("userEmail");
-    if (savedEmail) {
-      setUserEmail(savedEmail);
-      setShowEmailInput(false);
-      fetchUserBookings(savedEmail);
+    if (user?.email) {
+      fetchUserBookings(user.email);
     }
-  }, []);
+  }, [user]);
 
   const fetchUserBookings = async (email: string) => {
     try {
@@ -57,15 +55,6 @@ export default function UserDashboard() {
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (userEmail) {
-      localStorage.setItem("userEmail", userEmail);
-      setShowEmailInput(false);
-      fetchUserBookings(userEmail);
     }
   };
 
@@ -94,56 +83,6 @@ export default function UserDashboard() {
     .filter((b) => b.status !== "cancelled")
     .reduce((sum, b) => sum + parseFloat(b.total_price), 0);
 
-  if (showEmailInput) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-white flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full animate-scale-in">
-          <div className="text-center mb-6">
-            <div className="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel do Hóspede</h1>
-            <p className="text-gray-600">
-              Entre com seu email para ver suas reservas
-            </p>
-          </div>
-
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all outline-none"
-                placeholder="seu@email.com"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold py-3 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg"
-            >
-              Acessar Minhas Reservas
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="text-sm text-gray-600 hover:text-yellow-600 transition"
-            >
-              ← Voltar ao site
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -152,30 +91,23 @@ export default function UserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Meu Painel</h1>
-              <p className="text-black/80">{userEmail}</p>
+              <p className="text-black/80">
+                Bem-vindo, {user?.first_name || user?.username} ({user?.email})
+              </p>
             </div>
             <div className="flex gap-3">
+              <GuestHelpGuide />
               <Link
                 href="/"
                 className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
               >
                 Voltar ao Site
               </Link>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("userEmail");
-                  setUserEmail("");
-                  setShowEmailInput(true);
-                  setBookings([]);
-                }}
-                className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
-              >
-                Sair
-              </button>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Navigation */}
       <div className="bg-white shadow-md">
@@ -379,3 +311,10 @@ export default function UserDashboard() {
   );
 }
 
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute requiredRole="GUEST">
+      <UserDashboard />
+    </ProtectedRoute>
+  );
+}

@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { AdminHelpGuide } from '@/components/HelpGuide';
+import { StaffHelpGuide } from '@/components/HelpGuide';
 import {
   Users,
   Calendar,
@@ -39,7 +39,7 @@ interface Booking {
   created_at: string;
 }
 
-function AdminDashboard() {
+function StaffDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({
     totalBookings: 0,
@@ -119,20 +119,22 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black shadow-lg">
+      <div className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-              <p className="text-black/80">
-                Bem-vindo, {user?.first_name || user?.username} - Gestão do Hotel Jan
+              <h1 className="text-3xl font-bold mb-2">
+                {user?.role === 'MANAGER' ? 'Dashboard do Gerente' : 'Dashboard da Equipe'}
+              </h1>
+              <p className="text-white/80">
+                Bem-vindo, {user?.first_name || user?.username}
               </p>
             </div>
             <div className="flex gap-3">
-              <AdminHelpGuide />
+              <StaffHelpGuide />
               <Link
                 href="/"
-                className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
               >
                 Voltar ao Site
               </Link>
@@ -147,29 +149,37 @@ function AdminDashboard() {
         <div className="container mx-auto px-6">
           <nav className="flex gap-6 py-4">
             <Link
-              href="/admin"
-              className="text-yellow-600 font-semibold border-b-2 border-yellow-600 pb-2"
+              href="/staff"
+              className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-2"
             >
               Dashboard
             </Link>
             <Link
-              href="/admin/bookings"
-              className="text-gray-600 hover:text-yellow-600 font-medium pb-2 transition"
+              href="/staff/bookings"
+              className="text-gray-600 hover:text-blue-600 font-medium pb-2 transition"
             >
               Reservas
             </Link>
             <Link
-              href="/admin/rooms"
-              className="text-gray-600 hover:text-yellow-600 font-medium pb-2 transition"
+              href="/staff/rooms"
+              className="text-gray-600 hover:text-blue-600 font-medium pb-2 transition"
             >
               Quartos
             </Link>
             <Link
-              href="/admin/guests"
-              className="text-gray-600 hover:text-yellow-600 font-medium pb-2 transition"
+              href="/staff/guests"
+              className="text-gray-600 hover:text-blue-600 font-medium pb-2 transition"
             >
               Hóspedes
             </Link>
+            {user?.role === 'MANAGER' && (
+              <Link
+                href="/staff/reports"
+                className="text-gray-600 hover:text-blue-600 font-medium pb-2 transition"
+              >
+                Relatórios
+              </Link>
+            )}
           </nav>
         </div>
       </div>
@@ -261,8 +271,8 @@ function AdminDashboard() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Reservas Recentes</h2>
             <Link
-              href="/admin/bookings"
-              className="text-yellow-600 hover:text-yellow-700 font-semibold"
+              href="/staff/bookings"
+              className="text-blue-600 hover:text-blue-700 font-semibold"
             >
               Ver Todas →
             </Link>
@@ -324,10 +334,10 @@ function AdminDashboard() {
   );
 }
 
-export default function AdminPage() {
+export default function StaffPage() {
   return (
-    <ProtectedRoute requireAdmin={true}>
-      <AdminDashboard />
+    <ProtectedRoute requireStaff={true}>
+      <StaffDashboard />
     </ProtectedRoute>
   );
 }
