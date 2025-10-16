@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/auth/check/`);
+      const response = await axios.get(`${API_BASE_URL}/auth/auth/check/`);
       if (response.data.authenticated) {
         setUser(response.data.user);
       } else {
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login/`, {
+      const response = await axios.post(`${API_BASE_URL}/auth/auth/login/`, {
         username,
         password,
       });
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: RegisterData): Promise<boolean> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/register/`, userData);
+      const response = await axios.post(`${API_BASE_URL}/auth/auth/register/`, userData);
 
       const { token: authToken, user: newUser } = response.data;
       
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     delete axios.defaults.headers.common['Authorization'];
     
     // Call logout endpoint
-    axios.post(`${API_BASE_URL}/auth/logout/`).catch(console.error);
+    axios.post(`${API_BASE_URL}/auth/auth/logout/`).catch(console.error);
   };
 
   const isAuthenticated = !!user && !!token;
