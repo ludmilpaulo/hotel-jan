@@ -47,7 +47,7 @@ function StaffBookingsPage() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://hoteljan.shop/api/bookings/");
+      const response = await axios.get("https://taki.pythonanywhere.com/api/bookings/");
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -58,7 +58,7 @@ function StaffBookingsPage() {
 
   const updateBookingStatus = async (bookingId: number, newStatus: string) => {
     try {
-      await axios.patch(`https://hoteljan.shop/api/bookings/${bookingId}/`, {
+      await axios.patch(`https://taki.pythonanywhere.com/api/bookings/${bookingId}/`, {
         status: newStatus
       });
       

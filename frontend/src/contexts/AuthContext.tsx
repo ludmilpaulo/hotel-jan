@@ -39,7 +39,7 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://hoteljan.shop/api';
+const API_BASE_URL = 'https://taki.pythonanywhere.com/api';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

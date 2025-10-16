@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
-      const response = await fetch('https://hoteljan.shop/api/auth/auth/forgot-password/', {
+      const response = await fetch('https://taki.pythonanywhere.com/api/auth/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

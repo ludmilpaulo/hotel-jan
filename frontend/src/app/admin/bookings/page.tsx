@@ -68,7 +68,7 @@ export default function AdminBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://hoteljan.shop/api/bookings/");
+      const response = await axios.get("https://taki.pythonanywhere.com/api/bookings/");
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -82,7 +82,7 @@ export default function AdminBookings() {
     if (!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
 
     try {
-      await axios.post(`https://hoteljan.shop/api/bookings/${bookingId}/cancel/`);
+      await axios.post(`https://taki.pythonanywhere.com/api/bookings/${bookingId}/cancel/`);
       alert("Reserva cancelada com sucesso!");
       fetchBookings();
     } catch (error) {
@@ -93,7 +93,7 @@ export default function AdminBookings() {
 
   const handleResendEmail = async (bookingId: number) => {
     try {
-      await axios.post(`https://hoteljan.shop/api/bookings/${bookingId}/resend_confirmation/`);
+      await axios.post(`https://taki.pythonanywhere.com/api/bookings/${bookingId}/resend_confirmation/`);
       alert("Email reenviado com sucesso!");
     } catch (error) {
       console.error("Error resending email:", error);
@@ -104,7 +104,7 @@ export default function AdminBookings() {
   const downloadInvoice = async (bookingId: number, bookingNumber: string) => {
     try {
       const response = await axios.get(
-        `https://hoteljan.shop/api/bookings/${bookingId}/invoice/`,
+        `https://taki.pythonanywhere.com/api/bookings/${bookingId}/invoice/`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));

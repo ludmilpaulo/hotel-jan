@@ -80,7 +80,7 @@ interface BookingDetails {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const roomsRes = await axios.get("https://hoteljan.shop/api/rooms/");
+        const roomsRes = await axios.get("https://taki.pythonanywhere.com/api/rooms/");
         
         setRooms(roomsRes.data);
         if (roomsRes.data.length > 0) {
@@ -104,7 +104,7 @@ interface BookingDetails {
       if (!selectedRoom) return;
       
       try {
-        const response = await axios.get("https://hoteljan.shop/api/bookings/room_availability/", {
+        const response = await axios.get("https://taki.pythonanywhere.com/api/bookings/room_availability/", {
           params: {
             room_id: selectedRoom.id,
             start_date: new Date().toISOString().split('T')[0],
@@ -157,7 +157,7 @@ interface BookingDetails {
       setLoading(true);
       setMessage("");
       
-      const response = await axios.post("https://hoteljan.shop/api/bookings/", {
+      const response = await axios.post("https://taki.pythonanywhere.com/api/bookings/", {
         room: selectedRoom.id,
         name,
         email,
@@ -607,7 +607,7 @@ interface BookingDetails {
                   onClick={async () => {
                     try {
                       const response = await axios.get(
-                        `https://hoteljan.shop/api/bookings/${bookingDetails.id}/invoice/`,
+                        `https://taki.pythonanywhere.com/api/bookings/${bookingDetails.id}/invoice/`,
                         { responseType: 'blob' }
                       );
                       const url = window.URL.createObjectURL(new Blob([response.data]));

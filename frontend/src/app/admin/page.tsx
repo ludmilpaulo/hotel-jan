@@ -63,8 +63,8 @@ function AdminDashboard() {
     try {
       setLoading(true);
       const [bookingsRes, roomsRes] = await Promise.all([
-        axios.get("https://hoteljan.shop/api/bookings/"),
-        axios.get("https://hoteljan.shop/api/rooms/"),
+        axios.get("https://taki.pythonanywhere.com/api/bookings/"),
+        axios.get("https://taki.pythonanywhere.com/api/rooms/"),
       ]);
 
       const bookings: Booking[] = bookingsRes.data;
