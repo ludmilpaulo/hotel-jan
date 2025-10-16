@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2sf+ahl#a+za+xga$sg(&b#+yi*iou7fum@o_pjhs$^b8n(!89
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['taki.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -154,7 +154,7 @@ DEFAULT_FROM_EMAIL = 'Hotel Jan <noreply@hoteljan.co.ao>'
 SERVER_EMAIL = 'server@hoteljan.co.ao'
 
 # Frontend URL for password reset links
-FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_URL = 'https://taki.pythonanywhere.com'
 
 # Media files (for future use with images)
 MEDIA_URL = '/media/'
