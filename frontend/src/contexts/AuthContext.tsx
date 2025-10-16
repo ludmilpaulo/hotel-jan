@@ -17,8 +17,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/auth/login/`, {
         username,
@@ -92,16 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       axios.defaults.headers.common['Authorization'] = `Token ${authToken}`;
       
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Login failed:', error);
-      return false;
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.non_field_errors?.[0] || 
+                           error.response?.data?.detail || 
+                           'Credenciais inválidas. Tente novamente.';
+        return { success: false, error: errorMessage };
+      }
+      return { success: false, error: 'Erro de conexão. Tente novamente.' };
     }
   };
 
-  const register = async (userData: RegisterData): Promise<boolean> => {
+  const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('Attempting registration with:', userData);
       const response = await axios.post(`${API_BASE_URL}/auth/auth/register/`, userData);
+      console.log('Registration response:', response.data);
 
       const { token: authToken, user: newUser } = response.data;
       
@@ -110,10 +118,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(newUser);
       axios.defaults.headers.common['Authorization'] = `Token ${authToken}`;
       
-      return true;
+      console.log('Registration successful');
+      return { success: true };
     } catch (error) {
       console.error('Registration failed:', error);
-      return false;
+      if (axios.isAxiosError(error)) {
+        console.error('Error response:', error.response?.data);
+        console.error('Error status:', error.response?.status);
+        
+        // Extract specific error messages
+        const errorData = error.response?.data;
+        let errorMessage = 'Erro ao criar conta. Verifique os dados e tente novamente.';
+        
+        if (errorData?.username?.[0]) {
+          errorMessage = `Nome de usuário: ${errorData.username[0]}`;
+        } else if (errorData?.email?.[0]) {
+          errorMessage = `Email: ${errorData.email[0]}`;
+        } else if (errorData?.password?.[0]) {
+          errorMessage = `Senha: ${errorData.password[0]}`;
+        } else if (errorData?.non_field_errors?.[0]) {
+          errorMessage = errorData.non_field_errors[0];
+        } else if (errorData?.detail) {
+          errorMessage = errorData.detail;
+        }
+        
+        return { success: false, error: errorMessage };
+      }
+      return { success: false, error: 'Erro de conexão. Tente novamente.' };
     }
   };
 

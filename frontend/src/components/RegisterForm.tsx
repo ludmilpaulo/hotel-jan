@@ -44,12 +44,17 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       return;
     }
 
-    const success = await register(formData);
-    
-    if (success) {
-      onSuccess?.();
-    } else {
-      setError('Erro ao criar conta. Verifique os dados e tente novamente.');
+    try {
+      const result = await register(formData);
+      
+      if (result.success) {
+        onSuccess?.();
+      } else {
+        setError(result.error || 'Erro ao criar conta. Verifique os dados e tente novamente.');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Erro de conexão. Verifique sua internet e tente novamente.');
     }
     
     setLoading(false);

@@ -24,12 +24,12 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
     setLoading(true);
     setError('');
 
-    const success = await login(username, password);
+    const result = await login(username, password);
     
-    if (success) {
+    if (result.success) {
       onSuccess?.();
     } else {
-      setError('Credenciais inválidas. Verifique seu nome de usuário e senha.');
+      setError(result.error || 'Credenciais inválidas. Verifique seu nome de usuário e senha.');
     }
     
     setLoading(false);

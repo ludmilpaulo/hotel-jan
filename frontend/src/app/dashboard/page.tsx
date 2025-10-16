@@ -96,6 +96,12 @@ function UserDashboard() {
               </p>
             </div>
             <div className="flex gap-3">
+              <Link
+                href="/dashboard/bookings"
+                className="bg-black/10 hover:bg-black/20 text-black font-semibold px-4 py-2 rounded-lg transition"
+              >
+                Ver Todas as Reservas
+              </Link>
               <GuestHelpGuide />
               <Link
                 href="/"
@@ -296,12 +302,20 @@ function UserDashboard() {
                 <p className="text-gray-600 mb-6">
                   Você ainda não tem reservas. Que tal fazer sua primeira reserva?
                 </p>
-                <Link
-                  href="/reservas"
-                  className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 rounded-xl transition"
-                >
-                  Fazer Reserva
-                </Link>
+                <div className="flex gap-4 justify-center">
+                  <Link
+                    href="/reservas"
+                    className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 rounded-xl transition"
+                  >
+                    Fazer Reserva
+                  </Link>
+                  <Link
+                    href="/dashboard/bookings"
+                    className="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold px-8 py-3 rounded-xl transition"
+                  >
+                    Minhas Reservas
+                  </Link>
+                </div>
               </div>
             )}
           </>
