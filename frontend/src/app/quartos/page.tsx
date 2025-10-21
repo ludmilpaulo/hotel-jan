@@ -12,6 +12,9 @@ import {
   BedDouble
 } from "lucide-react";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 interface Room {
   id: number;
   name: string;
@@ -39,6 +42,8 @@ export default function QuartosPage() {
       setRooms(response.data);
     } catch (error) {
       console.error("Error fetching rooms:", error);
+      // Set empty array on error to prevent display issues
+      setRooms([]);
     } finally {
       setLoading(false);
     }
