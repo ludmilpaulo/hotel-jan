@@ -1,153 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 import { 
-  Wifi, 
-  Wind, 
-  Tv, 
-  Coffee, 
   Star, 
-  Users, 
   Bed, 
-  Maximize2, 
   Filter,
   X,
-  CheckCircle2,
-  Sparkles
+  BedDouble
 } from "lucide-react";
 
 interface Room {
   id: number;
-  nome: string;
-  descricao: string;
-  preco: number;
-  imagem: string;
-  comodidades: string[];
-  capacidade: number;
-  tamanho: string;
-  tipo: string;
-  destaque?: boolean;
-  caracteristicas: string[];
+  name: string;
+  room_type: string;
+  description: string;
+  price_per_night: string;
+  image: string | null;
 }
 
 export default function QuartosPage() {
-  const quartos: Room[] = [
-    {
-      id: 1,
-      nome: "Quarto Deluxe",
-      descricao: "Espaçoso, elegante, com cama king-size e vista panorâmica.",
-      preco: 150000,
-      imagem: "/quarto-deluxe.jpg",
-      comodidades: ["wifi", "ac", "tv", "coffee", "frigobar"],
-      capacidade: 2,
-      tamanho: "35m²",
-      tipo: "deluxe",
-      destaque: true,
-      caracteristicas: ["Cama King-Size", "Vista Panorâmica", "Varanda Privada", "Cofre Digital"]
-    },
-    {
-      id: 2,
-      nome: "Quarto Standard",
-      descricao: "Aconchegante e confortável, ideal para estadias rápidas.",
-      preco: 95000,
-      imagem: "/quarto-standard.jpg",
-      comodidades: ["wifi", "tv", "ac"],
-      capacidade: 2,
-      tamanho: "25m²",
-      tipo: "standard",
-      caracteristicas: ["Cama Queen-Size", "Banheiro Privativo", "Mesa de Trabalho"]
-    },
-    {
-      id: 3,
-      nome: "Suite Presidencial",
-      descricao: "Luxo e sofisticação, com sala de estar exclusiva e jacuzzi.",
-      preco: 350000,
-      imagem: "/suite.jpg",
-      comodidades: ["wifi", "ac", "tv", "coffee", "frigobar", "jacuzzi"],
-      capacidade: 4,
-      tamanho: "70m²",
-      tipo: "suite",
-      destaque: true,
-      caracteristicas: ["Sala de Estar", "Jacuzzi", "Cama King-Size", "Varanda Grande", "Minibar Premium"]
-    },
-    {
-      id: 4,
-      nome: "Quarto Standard Twin",
-      descricao: "Perfeito para amigos ou colegas de trabalho, com duas camas de solteiro.",
-      preco: 95000,
-      imagem: "/quarto-standard.jpg",
-      comodidades: ["wifi", "tv", "ac"],
-      capacidade: 2,
-      tamanho: "25m²",
-      tipo: "standard",
-      caracteristicas: ["2 Camas de Solteiro", "Banheiro Privativo", "Mesa de Trabalho"]
-    },
-    {
-      id: 5,
-      nome: "Suite Familiar",
-      descricao: "Espaço amplo ideal para famílias, com quarto separado e sala de estar.",
-      preco: 250000,
-      imagem: "/quarto-deluxe.jpg",
-      comodidades: ["wifi", "ac", "tv", "coffee", "frigobar"],
-      capacidade: 4,
-      tamanho: "50m²",
-      tipo: "suite",
-      caracteristicas: ["2 Quartos", "Sala de Estar", "Cama King + 2 Solteiro", "Cozinha Compacta"]
-    },
-    {
-      id: 6,
-      nome: "Quarto Deluxe Twin",
-      descricao: "Versão twin do quarto deluxe, perfeito para executivos.",
-      preco: 150000,
-      imagem: "/quarto-deluxe.jpg",
-      comodidades: ["wifi", "ac", "tv", "coffee", "frigobar"],
-      capacidade: 2,
-      tamanho: "35m²",
-      tipo: "deluxe",
-      caracteristicas: ["2 Camas de Solteiro", "Vista Panorâmica", "Varanda Privada", "Cofre Digital"]
-    }
-  ];
-
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
-  const [filtroCapacidade, setFiltroCapacidade] = useState<number>(0);
   const [ordenacao, setOrdenacao] = useState<string>("preco-asc");
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
-  const getComodidadeIcon = (comodidade: string) => {
-    switch (comodidade) {
-      case "wifi": return <Wifi className="w-5 h-5" />;
-      case "ac": return <Wind className="w-5 h-5" />;
-      case "tv": return <Tv className="w-5 h-5" />;
-      case "coffee": return <Coffee className="w-5 h-5" />;
-      case "frigobar": return <Coffee className="w-5 h-5" />;
-      case "jacuzzi": return <Sparkles className="w-5 h-5" />;
-      default: return null;
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("https://taki.pythonanywhere.com/api/rooms/");
+      setRooms(response.data);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getComodidadeNome = (comodidade: string) => {
-    switch (comodidade) {
-      case "wifi": return "Wi-Fi";
-      case "ac": return "Ar Condicionado";
-      case "tv": return "TV a Cabo";
-      case "coffee": return "Café";
-      case "frigobar": return "Frigobar";
-      case "jacuzzi": return "Jacuzzi";
-      default: return comodidade;
-    }
-  };
 
-  const quartosFiltrados = quartos
-    .filter(q => filtroTipo === "todos" || q.tipo === filtroTipo)
-    .filter(q => filtroCapacidade === 0 || q.capacidade >= filtroCapacidade)
+  const roomsFiltered = rooms
+    .filter(room => filtroTipo === "todos" || room.room_type === filtroTipo)
     .sort((a, b) => {
       switch (ordenacao) {
-        case "preco-asc": return a.preco - b.preco;
-        case "preco-desc": return b.preco - a.preco;
-        case "capacidade": return b.capacidade - a.capacidade;
-        case "tamanho": return parseInt(b.tamanho) - parseInt(a.tamanho);
+        case "preco-asc": return parseFloat(a.price_per_night) - parseFloat(b.price_per_night);
+        case "preco-desc": return parseFloat(b.price_per_night) - parseFloat(a.price_per_night);
+        case "nome": return a.name.localeCompare(b.name);
         default: return 0;
       }
     });
@@ -187,7 +91,7 @@ export default function QuartosPage() {
                 {mostrarFiltros ? "Fechar" : "Filtros"}
               </button>
               <span className="text-gray-600 font-medium">
-                {quartosFiltrados.length} {quartosFiltrados.length === 1 ? "quarto encontrado" : "quartos encontrados"}
+                {roomsFiltered.length} {roomsFiltered.length === 1 ? "quarto encontrado" : "quartos encontrados"}
               </span>
             </div>
 
@@ -200,15 +104,14 @@ export default function QuartosPage() {
               >
                 <option value="preco-asc">Menor Preço</option>
                 <option value="preco-desc">Maior Preço</option>
-                <option value="capacidade">Capacidade</option>
-                <option value="tamanho">Tamanho</option>
+                <option value="nome">Nome</option>
               </select>
             </div>
           </div>
 
           {/* Painel de Filtros */}
           {mostrarFiltros && (
-            <div className="mt-6 pt-6 border-t-2 border-gray-100 grid md:grid-cols-3 gap-6 animate-fade-in">
+            <div className="mt-6 pt-6 border-t-2 border-gray-100 grid md:grid-cols-2 gap-6 animate-fade-in">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">Tipo de Quarto</label>
                 <div className="space-y-2">
@@ -228,31 +131,10 @@ export default function QuartosPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Capacidade Mínima</label>
-                <div className="space-y-2">
-                  {[0, 2, 4].map(cap => (
-                    <button
-                      key={cap}
-                      onClick={() => setFiltroCapacidade(cap)}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition flex items-center gap-2 ${
-                        filtroCapacidade === cap
-                          ? "bg-yellow-500 text-black font-semibold"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      <Users className="w-4 h-4" />
-                      {cap === 0 ? "Todas" : `${cap}+ pessoas`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="flex items-end">
                 <button
                   onClick={() => {
                     setFiltroTipo("todos");
-                    setFiltroCapacidade(0);
                     setOrdenacao("preco-asc");
                   }}
                   className="w-full px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition"
@@ -267,85 +149,57 @@ export default function QuartosPage() {
 
       {/* Listagem de Quartos */}
       <section className="animate-fade-in-up">
-        {quartosFiltrados.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+            <p className="text-xl text-gray-600">Carregando quartos...</p>
+          </div>
+        ) : roomsFiltered.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-gray-600">Nenhum quarto encontrado com os filtros selecionados.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {quartosFiltrados.map((quarto) => (
+            {roomsFiltered.map((room) => (
             <div
-              key={quarto.id}
+              key={room.id}
                 className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col card-hover group relative"
               >
-                {quarto.destaque && (
-                  <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold px-3 py-1 rounded-lg shadow-lg text-sm flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-black" />
-                    Popular
-                  </div>
-                )}
-                
                 <div className="relative overflow-hidden">
-              <Image
-                src={quarto.imagem}
-                alt={quarto.nome}
-                width={500}
-                height={300}
-                    className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+                  {room.image ? (
+                    <Image
+                      src={room.image}
+                      alt={room.name}
+                      width={500}
+                      height={300}
+                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={`absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center ${room.image ? 'hidden' : ''}`}>
+                    <BedDouble className="w-16 h-16 text-white" />
+                  </div>
                 </div>
 
               <div className="p-6 flex flex-col flex-grow">
-                  <h2 className="font-bold text-2xl mb-2 text-gray-900">{quarto.nome}</h2>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed flex-grow">{quarto.descricao}</p>
+                  <h2 className="font-bold text-2xl mb-2 text-gray-900">{room.name}</h2>
+                  <p className="text-gray-600 text-sm mb-4 leading-relaxed flex-grow">{room.description}</p>
 
                   {/* Informações */}
-                  <div className="grid grid-cols-3 gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-center">
-                      <Users className="w-5 h-5 mx-auto mb-1 text-yellow-600" />
-                      <p className="text-xs text-gray-600">{quarto.capacidade} pessoas</p>
-                    </div>
-                    <div className="text-center">
-                      <Maximize2 className="w-5 h-5 mx-auto mb-1 text-yellow-600" />
-                      <p className="text-xs text-gray-600">{quarto.tamanho}</p>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
                     <div className="text-center">
                       <Bed className="w-5 h-5 mx-auto mb-1 text-yellow-600" />
-                      <p className="text-xs text-gray-600 capitalize">{quarto.tipo}</p>
+                      <p className="text-xs text-gray-600 capitalize">{room.room_type}</p>
+                    </div>
+                    <div className="text-center">
+                      <Star className="w-5 h-5 mx-auto mb-1 text-yellow-600" />
+                      <p className="text-xs text-gray-600">Hotel Jan</p>
                     </div>
                   </div>
-
-                {/* Comodidades */}
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-700 mb-2">Comodidades:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {quarto.comodidades.slice(0, 5).map((comodidade, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-1 bg-yellow-50 text-yellow-700 px-2 py-1 rounded-lg text-xs"
-                          title={getComodidadeNome(comodidade)}
-                        >
-                          {getComodidadeIcon(comodidade)}
-                        </div>
-                      ))}
-                      {quarto.comodidades.length > 5 && (
-                        <span className="text-xs text-gray-500 px-2 py-1">+{quarto.comodidades.length - 5}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Características */}
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-700 mb-2">Destaques:</p>
-                    <ul className="space-y-1">
-                      {quarto.caracteristicas.slice(0, 3).map((carac, index) => (
-                        <li key={index} className="flex items-center gap-2 text-xs text-gray-600">
-                          <CheckCircle2 className="w-3 h-3 text-green-500" />
-                          {carac}
-                        </li>
-                      ))}
-                    </ul>
-                </div>
 
                 {/* Preço + Reservar */}
                   <div className="mt-auto pt-4 border-t-2 border-gray-100">
@@ -353,7 +207,7 @@ export default function QuartosPage() {
                       <div>
                         <p className="text-xs text-gray-500">A partir de</p>
                         <p className="font-bold text-2xl text-yellow-600">
-                          Kz {quarto.preco.toLocaleString()}
+                          Kz {parseFloat(room.price_per_night).toLocaleString()}
                         </p>
                         <p className="text-xs text-gray-500">por noite</p>
                       </div>
