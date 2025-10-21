@@ -11,9 +11,17 @@ import {
   X,
   BedDouble
 } from "lucide-react";
+import ImageSlider from "@/components/ImageSlider";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+
+interface RoomImage {
+  id: number;
+  image_url: string;
+  alt_text?: string;
+  order: number;
+}
 
 interface Room {
   id: number;
@@ -22,6 +30,7 @@ interface Room {
   description: string;
   price_per_night: string;
   image: string | null;
+  images: RoomImage[];
 }
 
 export default function QuartosPage() {
@@ -171,23 +180,11 @@ export default function QuartosPage() {
                 className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col card-hover group relative"
               >
                 <div className="relative overflow-hidden">
-                  {room.image ? (
-                    <Image
-                      src={room.image}
-                      alt={room.name}
-                      width={500}
-                      height={300}
-                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <div className={`absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center ${room.image ? 'hidden' : ''}`}>
-                    <BedDouble className="w-16 h-16 text-white" />
-                  </div>
+                  <ImageSlider 
+                    images={room.images || []} 
+                    roomName={room.name}
+                    className="h-56"
+                  />
                 </div>
 
               <div className="p-6 flex flex-col flex-grow">

@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { Plus, Edit, Trash2, BedDouble, DollarSign, Upload, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
+import ImageSlider from "@/components/ImageSlider";
+
+interface RoomImage {
+  id: number;
+  image_url: string;
+  alt_text?: string;
+  order: number;
+}
 
 interface Room {
   id: number;
@@ -12,6 +20,7 @@ interface Room {
   description: string;
   price_per_night: string;
   image: string | null;
+  images: RoomImage[];
 }
 
 export default function AdminRooms() {
@@ -22,6 +31,8 @@ export default function AdminRooms() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploadMethod, setImageUploadMethod] = useState<'url' | 'file'>('url');
+  const [multipleImages, setMultipleImages] = useState<{url: string, alt_text: string, order: number}[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -57,6 +68,48 @@ export default function AdminRooms() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleMultipleImageFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(files);
+    
+    // Create previews for multiple files
+    const newImages = files.map((file, index) => ({
+      url: URL.createObjectURL(file),
+      alt_text: file.name,
+      order: multipleImages.length + index
+    }));
+    setMultipleImages(prev => [...prev, ...newImages]);
+  };
+
+  const addImageUrl = () => {
+    const newImage = {
+      url: '',
+      alt_text: '',
+      order: multipleImages.length
+    };
+    setMultipleImages(prev => [...prev, newImage]);
+  };
+
+  const updateImageUrl = (index: number, field: 'url' | 'alt_text', value: string) => {
+    setMultipleImages(prev => prev.map((img, i) => 
+      i === index ? { ...img, [field]: value } : img
+    ));
+  };
+
+  const removeImage = (index: number) => {
+    setMultipleImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    setMultipleImages(prev => {
+      const newImages = [...prev];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      return newImages.map((img, index) => ({ ...img, order: index }));
+    });
   };
 
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
@@ -151,6 +204,8 @@ export default function AdminRooms() {
     setImageFile(null);
     setImagePreview(null);
     setImageUploadMethod('url');
+    setMultipleImages([]);
+    setImageFiles([]);
   };
 
   return (
@@ -208,22 +263,12 @@ export default function AdminRooms() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rooms.map((room) => (
               <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                <div className="h-48 relative overflow-hidden">
-                  {room.image ? (
-                    <img 
-                      src={room.image} 
-                      alt={room.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <div className={`absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center ${room.image ? 'hidden' : ''}`}>
-                    <BedDouble className="w-16 h-16 text-white" />
-                  </div>
+                <div className="h-48">
+                  <ImageSlider 
+                    images={room.images || []} 
+                    roomName={room.name}
+                    className="h-full"
+                  />
                 </div>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
